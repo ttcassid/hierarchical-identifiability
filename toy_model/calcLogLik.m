@@ -14,7 +14,7 @@ function LL = calcLogLik(Theta, yData, par)
  
 
 
-MCMC_SAMPLES = 1e6;
+MCMC_SAMPLES = 1e5;
 
 % Extract mean and (co)variance parameters from the vector Theta
 popMean = Theta(1:2);
@@ -44,11 +44,7 @@ yReshaped = reshape(yData, nIndiv, 1, nPoints);
 % Calculate (log) probabilities and sum over time points 
 Pij = sum((  yReshaped  - par.x0*exp(cIndiv.* t) ).^2, 3);
 
-
-LLi = zeros(nIndiv, 1);
-for ii = 1:nIndiv
-    LLi(ii) = logsumexp( -1/par.sNoise^2 * Pij(ii, :) );
-end
+LLi = logsumexp(-1/par.sNoise^2 * Pij, 2);
 
 LL = sum(LLi);
 
