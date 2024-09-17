@@ -1,0 +1,175 @@
+---
+title: "Identifiability of non-linear mixed effects models"
+format: html
+editor: visual
+---
+
+## Viral load model
+
+$$
+\begin{aligned}
+  dT/dt &= \lambda - \beta V T - d_t T\\
+  dI/dt &= \beta VT - \delta I \\
+  dV/dt &= pI - cV
+\end{aligned}
+$$
+
+$T$ is the average density of target (uninfected) cells
+
+$I$ is the average density of infectious cells
+
+$V$ is the average density of virus (observations)
+
+-   $\lambda$ - recruitment rate
+-   $\beta$ - transmission rate from $V(t)$ to $T(t)$
+-   $d_t$ - natural cell mortality
+-   $c$ - clearance rate
+-   $\delta$ - cell infection mortality
+-   $p$ - rate of virus particles per infected cell
+
+$T_0$, $\beta$ and $p$ are non-identifiable
+
+```{r}
+
+library(deSolve)
+
+tiv <- function(time, state, params) {
+  with(as.list(c(state, params)), {
+    # rate of change
+    dT = lambda - beta*V*Td - dt*Td
+    dI = beta*V*Td - delta*I
+    dV = p*I - c*V
+    
+    # return the rate of change
+    list(c(dT, dI, dV))
+  })
+}
+
+params <- c(lambda = 1e+06 * (1 + 0.01), 
+            beta = 1e-08, 
+            dt = 0.01, 
+            delta = 1.5, 
+            p = 1e+02, 
+            c = 23)
+
+state <- c(Td = 1e+06, 
+           I = 1,
+           V = 1e+07)
+
+times <- seq(0, 200, by = 1)
+
+out <- ode(y = state, times = times, func = tiv, parms = params)
+
+
+head(out)
+
+par(oma = c(0, 0, 3, 0))
+plot(out, xlab = "time", ylab = "-", lwd = 2)
+plot(out[,"Td"], out[,"I"], pch = ".", lwd = 2)
+mtext(outer = T, side = 3, "TIV model", cex = 1.5)
+
+
+```
+
+following example from <https://github.com/oliviergimenez/fitODEnimble/blob/master/index.Rmd>
+
+Get ODE solver working with nimble
+
+```{r}
+
+library(nimble)
+
+# wrapper for nimble
+R_ode <- function(y, times, params) {
+  tiv <- function(time, state, params) {
+    with(as.list(c(state, params)), {
+      # rate of change
+      dT = lambda - beta*V*Td - dt*Td
+      dI = beta*V*Td - delta*I
+      dV = p*I - c*V
+      
+      # return the rate of change
+      return(list(c(dT, dI, dV)))
+    })
+  }
+  result <- deSolve::ode(y, times, tiv, params)[,-1]
+  return(result)
+}
+
+# nimble function
+# - double(1) initialises a vector of doubles
+# - double(2) initialises a matrix of doubles
+nimble_ode <- nimbleRcall(
+  prototype = function(
+    y = double(1), 
+    times = double(1), 
+    params = double(1)
+    ) {},
+  returnType = double(2),
+  Rfun = 'R_ode'
+)
+
+code <- nimbleCode({
+  xOde[1:201, 1:3] <- nimble_ode(y[1:3], times[1:201], params[1:6])
+})
+
+constants <- list()
+data <- list()
+inits <- list(y = state, times = times, params = params)
+Rmodel <- nimbleModel(code, constants, data, inits)
+Cmodel <- compileNimble((Rmodel))
+
+ode_Nimble <- Rmodel$xOde
+
+# verify the nimble code is doing what we want it to
+sum(ode_Nimble - out[,-1])
+
+
+```
+
+Write sampler in nimble
+
+-   fix all parameters except $\lambda$
+
+-   use all observations
+
+```{r}
+
+library(ggplot2)
+library(dplyr)
+
+set.seed(243452)
+nt = length(times)
+ndim = length(params)
+
+# add error to data
+sigma = 1.0
+y = out[,"V"] + rnorm(nt, mean = 0, sd = sigma)
+
+# plot observations
+data = data.frame(times, y)
+data %>% ggplot(aes(x = times, y = y)) + 
+  geom_line() + 
+  geom_point()
+
+
+```
+
+nimble model
+
+```{r}
+
+code <- nimbleCode({
+  # tiv model
+  xOde[1:nt, 1:ndim] <- nimble_ode(state[1:ndim], times[1:nt], params[1:ndim])
+  
+  # prior on lambda
+  params["lambda"] ~ dnorm(0, 10)
+  
+  # likelihood
+  for (i in 1:nt){
+    y[i] ~ dnorm(xOde[i, 3], sigma)
+  }
+})
+
+```
