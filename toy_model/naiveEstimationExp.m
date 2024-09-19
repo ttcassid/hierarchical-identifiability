@@ -11,12 +11,12 @@ rng(5);
 % distributions. Assuming uniform currently.
 
 prior_mean_a_min = 0; % Upper bound on prior for mean(a).
-prior_mean_a_max = 0.5;  % Lower bound on prior for mean(a).
+prior_mean_a_max = 1;  % Lower bound on prior for mean(a).
 prior_mean_b_min = 0;   % Upper bound on prior for mean(b).
-prior_mean_b_max = 2.0;   % Lower bound on prior for mean(b).
+prior_mean_b_max = 4.0;   % Lower bound on prior for mean(b).
 
 % Define sampling parameters
-nTrials = 1000;         % Number of trials
+nTrials = 5000;         % Number of trials
 bestFraction = 0.8;     % Fraction of trials to accept
 bestNumber = ceil(nTrials*bestFraction); % Number of accepted trials.
 samplePopDist = @sampleGamma_Gamma; % Specify the pop-level distribution

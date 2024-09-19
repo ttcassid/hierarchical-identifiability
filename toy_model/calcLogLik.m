@@ -20,18 +20,12 @@ MCMC_SAMPLES = 1e5;
 
 [nIndiv, nPoints] = size(yData);
 
-% Total number of required samples from pop-level dist required for Monte Carlo intergation
-nSamples = nIndiv * MCMC_SAMPLES;
 
 % Sample individual parameters from the pop level distribution
-paramsIndiv = samplePopDist(Theta, nSamples);
+paramsIndiv = samplePopDist(Theta, MCMC_SAMPLES);
 
 % All that matters for the likelihood function is c = a+b
-cIndiv = sum(paramsIndiv, 2);
-
-% Reshape into a matrix whose (i,j) element is the jth MCMC sample for the ith individual 
-% ith individual
-cIndiv = reshape(cIndiv, nIndiv, MCMC_SAMPLES);
+cIndiv = sum(paramsIndiv, 2)';
 
 % Vector of time points (in 3rd dimension for summing over)
 t = reshape( par.dt * (0:nPoints-1), 1, 1, nPoints ); 
