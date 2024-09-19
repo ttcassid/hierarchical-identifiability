@@ -20,7 +20,7 @@ prior_cov_max = 0;      % Lower bound on prior for cov(a,b).
 
 % Define sampling parameters
 nTrials = 500;         % Number of trials
-bestFraction = 0.1;     % Fraction of trials to accept
+bestFraction = 0.8;     % Fraction of trials to accept
 bestNumber = ceil(nTrials*bestFraction); % Number of accepted trials.
 samplePopDist = @sampleNormal_Gamma; % Specify the pop-level distribution
 
@@ -37,21 +37,21 @@ t = linspace(0,par.tEnd-par.dt,nTime); % Vector of time points
 true_mean_a = 0;        % True mean(a) value.
 true_sd_a = 0.3;        % True std(a) value.
 true_mean_b = 1.5;      % True mean(b) value.
-true_sd_b = 2;          % True std(b) value.
+true_sd_b = 0.2;          % True std(b) value.
 true_cov = 0;           % True cov(a,b) value.
 
 true_means = [true_mean_a; true_mean_b];                        % Vector of true means.
 true_sds = [true_sd_a; true_sd_b];                              % Vector of true stds.
-true_covMatrix = [true_sd_a, true_cov; true_cov, true_sd_b];    % True covariance matrix.
+true_covMatrix = [true_sd_a^2, true_cov; true_cov, true_sd_b^2];    % True covariance matrix.
+true_theta = [true_mean_a; true_mean_b; true_sd_a^2; true_sd_b^2; true_cov];
 
 % Generate sample parameters for the synthetic data.
 dataParams = zeros(nIndiv,2);
-dataParams(:,1) = normrnd(true_means(1),true_sds(1),nIndiv,1);  % Samples from a-distribution.
-dataParams(:,2) = gamrnd(true_means(2),true_sds(2),nIndiv,1);   % Samples from b-distribution.
+dataParams = samplePopDist(true_theta, nIndiv);   % Samples from a-distribution.
 cIndiv = sum(dataParams, 2);                                    % a+b
 
 % Generate synthetic data
-data = par.x0*exp(cIndiv*t);
+data = par.x0*exp(cIndiv.*t) + par.sNoise*normrnd(0, 1, nIndiv, nTime);
 
 % Generate samples from prior distributions for checking
 mean_a_samples = prior_mean_a_min + (prior_mean_a_max-prior_mean_a_min)*rand(nTrials,1);    % Samples of mean(a).
@@ -64,8 +64,7 @@ loglikelihood = zeros(nTrials,1);
 
 % Perform trials and calculate log likelihood for each sample from the
 % priors.
-for iTrial = 1:nTrials
-    iTrial
+parfor iTrial = 1:nTrials
     Theta = [mean_a_samples(iTrial);mean_b_samples(iTrial);sd_a_samples(iTrial);sd_b_samples(iTrial);cov_samples(iTrial)];
     loglikelihood(iTrial) = calcLogLik(Theta, data, samplePopDist, par);
 end
@@ -75,4 +74,9 @@ end
 
 % Scatter plot of estimates of mean(a) vs mean(b) for closest samples.
 figure; scatter(mean_a_samples(order(1:bestNumber)),mean_b_samples(order(1:bestNumber)),15,loglikelihood(order(1:bestNumber)))
+colorbar;
+xline(true_means(1), 'k--')
+yline(true_means(2), 'k--')
 xlabel('Mean(a)'); ylabel('Mean(b)');
+
+
