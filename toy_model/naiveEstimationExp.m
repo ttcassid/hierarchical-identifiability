@@ -11,7 +11,7 @@ rng(5);
 % distributions. Assuming uniform currently.
 
 prior_mean_a_min = 0; % Upper bound on prior for mean(a).
-prior_mean_a_max = 2.0;  % Lower bound on prior for mean(a).
+prior_mean_a_max = 0.5;  % Lower bound on prior for mean(a).
 prior_mean_b_min = 0;   % Upper bound on prior for mean(b).
 prior_mean_b_max = 2.0;   % Lower bound on prior for mean(b).
 
@@ -23,12 +23,12 @@ samplePopDist = @sampleGamma_Gamma; % Specify the pop-level distribution
 
 
 % Define synthetic data parameters
-nIndiv = 100;          % Number of individuals in the dataset.
+nIndiv = 10;          % Number of individuals in the dataset.
 par.x0 = 1;             % Initial conditions.
 par.tEnd = 1;         % Final time of model.
 par.dt = 0.2;    % Time step in model.
 nTime = par.tEnd/par.dt + 1;       % Number of time points.
-par.sNoise = 0.001;      % Standard deviation of observation noise.
+par.sNoise = 0.1;      % Standard deviation of observation noise.
 t = linspace(0,par.tEnd,nTime); % Vector of time points
 
 true_mean_a = 0.1;        % True mean(a) value.
