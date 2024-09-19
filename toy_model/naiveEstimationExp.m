@@ -23,7 +23,7 @@ samplePopDist = @sampleGamma_Gamma; % Specify the pop-level distribution
 
 
 % Define synthetic data parameters
-nIndiv = 10;          % Number of individuals in the dataset.
+nIndiv = 100;          % Number of individuals in the dataset.
 par.x0 = 1;             % Initial conditions.
 par.tEnd = 1;         % Final time of model.
 par.dt = 0.2;    % Time step in model.
