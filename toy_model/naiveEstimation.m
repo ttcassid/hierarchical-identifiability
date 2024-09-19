@@ -7,14 +7,14 @@ rng(5);
 % Define priors for mean and standard deviation of population
 % distributions. Assuming uniform currently.
 
-prior_mean_a_min = -1; % Upper bound on prior for mean(a).
-prior_mean_a_max = 1;  % Lower bound on prior for mean(a).
+prior_mean_a_min = -0.5; % Upper bound on prior for mean(a).
+prior_mean_a_max = 0.5;  % Lower bound on prior for mean(a).
 prior_sd_a_min = 0;     % Upper bound on prior for std(a).
-prior_sd_a_max = 1;     % Lower bound on prior for std(a).
+prior_sd_a_max = 0.5;     % Lower bound on prior for std(a).
 prior_mean_b_min = 0;   % Upper bound on prior for mean(b).
-prior_mean_b_max = 3;   % Lower bound on prior for mean(b).
+prior_mean_b_max = 0.5;   % Lower bound on prior for mean(b).
 prior_sd_b_min = 0;     % Upper bound on prior for std(b).
-prior_sd_b_max = 3;     % Lower bound on prior for std(b).
+prior_sd_b_max = 0.5;     % Lower bound on prior for std(b).
 prior_cov_min = 0;      % Upper bound on prior for cov(a,b).
 prior_cov_max = 0;      % Lower bound on prior for cov(a,b).
 
@@ -28,15 +28,15 @@ samplePopDist = @sampleNormal_Gamma; % Specify the pop-level distribution
 % Define synthetic data parameters
 nIndiv = 10;          % Number of individuals in the dataset.
 par.x0 = 1;             % Initial conditions.
-par.tEnd = 0.1;         % Final time of model.
-par.dt = par.tEnd/4;    % Time step in model.
-nTime = 1/par.dt;       % Number of time points.
+par.tEnd = 1;         % Final time of model.
+par.dt = 0.2;    % Time step in model.
+nTime = par.tEnd/par.dt + 1;       % Number of time points.
 par.sNoise = 0.01;      % Standard deviation of observation noise.
-t = linspace(0,par.tEnd-par.dt,nTime); % Vector of time points
+t = linspace(0,par.tEnd,nTime); % Vector of time points
 
 true_mean_a = 0;        % True mean(a) value.
 true_sd_a = 0.3;        % True std(a) value.
-true_mean_b = 1.5;      % True mean(b) value.
+true_mean_b = 0.2;      % True mean(b) value.
 true_sd_b = 0.2;          % True std(b) value.
 true_cov = 0;           % True cov(a,b) value.
 
