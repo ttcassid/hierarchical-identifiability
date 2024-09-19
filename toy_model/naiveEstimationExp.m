@@ -68,5 +68,5 @@ colorbar;
 xline(true_means(1), 'k--')
 yline(true_means(2), 'k--')
 xlabel('Mean(a)'); ylabel('Mean(b)');
-
+title('log likelihood')
 
