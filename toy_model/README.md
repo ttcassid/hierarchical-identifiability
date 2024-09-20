@@ -1,4 +1,4 @@
-README for the toy model
+# README for the toy model
 
 See draft article for description of the model and methods
 
