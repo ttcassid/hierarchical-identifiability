@@ -24,18 +24,22 @@ MCMC_SAMPLES = 1e5;
 % Sample individual parameters from the pop level distribution
 paramsIndiv = samplePopDist(Theta, MCMC_SAMPLES);
 
-% All that matters for the likelihood function is c = a+b
-cIndiv = sum(paramsIndiv, 2)';
+% Vector of time points
+tObs = par.dt * (0:nPoints-1); 
 
-% Vector of time points (in 3rd dimension for summing over)
-t = reshape( par.dt * (0:nPoints-1), 1, 1, nPoints ); 
+% Evaluate forward model under individual parameters
+xt = evalForwardMdl(paramsIndiv, tObs, par);
+
+% Reshape so time is on the 3rd dimension for summing over
+xt = reshape(xt, 1, MCMC_SAMPLES, nPoints );
+
 
 % Reshape data matrix so that time points are in the 3rd dimension to match
 % t
 yReshaped = reshape(yData, nIndiv, 1, nPoints);
 
 % Calculate (log) probabilities and sum over time points 
-Pij = sum((  yReshaped  - par.x0*exp(cIndiv.* t) ).^2, 3);
+Pij = sum((yReshaped - xt).^2, 3);
 
 LLi = logsumexp(-1/par.sNoise^2 * Pij, 2);
 
