@@ -19,7 +19,7 @@ prior_mean_b_min = 0;   % Upper bound on prior for mean(b).
 prior_mean_b_max = 2.0;   % Lower bound on prior for mean(b).
 
 % Define sampling parameters
-nTrials = 500;         % Number of trials
+nTrials = 4000;         % Number of trials
 bestFraction = 0.8;     % Fraction of trials to accept
 samplePopDist = @sampleExp_Exp; % Specify the pop-level distribution
 
@@ -56,7 +56,7 @@ loglikelihood = zeros(nTrials,1);
 
 % Perform trials and calculate log likelihood for each sample from the
 % priors.
-for iTrial = 1:nTrials
+parfor iTrial = 1:nTrials
     loglikelihood(iTrial) = calcLogLik(Theta_samples(iTrial, :), logData, samplePopDist, par);
 end
 
@@ -69,7 +69,10 @@ bestNumber = ceil(nTrials*bestFraction); % Number of accepted trials.
 figure; scatter(mean_a_samples(order(1:bestNumber)),mean_b_samples(order(1:bestNumber)),15,loglikelihood(order(1:bestNumber)))
 colorbar;
 xline(true_means(1), 'k--')
+xline(true_means(2), 'k--')
+yline(true_means(1), 'k--')
 yline(true_means(2), 'k--')
+
 xlabel('Mean(a)'); ylabel('Mean(b)');
 title('log likelihood')
 
