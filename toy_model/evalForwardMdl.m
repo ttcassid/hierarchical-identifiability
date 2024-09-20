@@ -1,6 +1,6 @@
-function xt = evalForwardMdl(paramsIndiv, tObs, par )
+function logxt = evalForwardMdl(paramsIndiv, tObs, par )
 
 cIndiv = sum(paramsIndiv, 2);                                    % a+b
 
-xt = par.x0*exp(cIndiv.*tObs);
+logxt = log(par.x0) + cIndiv.*tObs;
 

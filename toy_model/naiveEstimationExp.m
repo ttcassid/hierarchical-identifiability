@@ -43,7 +43,7 @@ dataParams = samplePopDist(true_theta, nIndiv);   % Samples from a-distribution.
 
 
 % Generate synthetic data
-data = evalForwardMdl(dataParams, tObs, par) + par.sNoise*normrnd(0, 1, nIndiv, nTime);
+logData = evalForwardMdl(dataParams, tObs, par) + par.sNoise*normrnd(0, 1, nIndiv, nTime);
 
 
 % Generate samples from prior distributions for checking
@@ -57,7 +57,7 @@ loglikelihood = zeros(nTrials,1);
 % Perform trials and calculate log likelihood for each sample from the
 % priors.
 for iTrial = 1:nTrials
-    loglikelihood(iTrial) = calcLogLik(Theta_samples(iTrial, :), data, samplePopDist, par);
+    loglikelihood(iTrial) = calcLogLik(Theta_samples(iTrial, :), logData, samplePopDist, par);
 end
 
 % Sort log likelihood to find closest matches
